@@ -2,7 +2,8 @@
 # from django.http import JsonResponse
 from students.models import Student
 from products.models import Product
-from .serializers import StudentSerializer, EmployeeSerializer, ProductSerializer #we need to import what we created in serialziers 
+from books.models import Book
+from .serializers import StudentSerializer, EmployeeSerializer, ProductSerializer, BookSerializer #we need to import what we created in serialziers 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -14,6 +15,8 @@ from rest_framework import mixins , generics, viewsets  #if we want to use views
 from blogs.models import Blog, Comment
 from blogs.serializers import BlogSerializer, CommentSerializer
 from .paginations import CustomPagination  #if we want to use custom pagination
+from employees.filters import EmployeeFilter  #if we want to use filters
+from rest_framework.filters import SearchFilter
 
 
 
@@ -40,8 +43,43 @@ from .paginations import CustomPagination  #if we want to use custom pagination
 #     products_list = list(products.values())
 #     return JsonResponse(products_list, safe=False) 
 # this is manual serialzier but we should not follw this
+@api_view(['GET', 'POST'])    
+def booksView(request):
+    if request.method == 'GET':
+        books = Book.objects.all()
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK) 
+    elif request.method == 'POST':
+        serializer = BookSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])    
+def bookDetailView(request, pk):
+    try:
+        book = Book.objects.get(pk=pk)
+    except Book.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        serializer = BookSerializer(book)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = BookSerializer(book, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        book.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+
+
     
-          
+    
+             
            
 
     #function based views 
@@ -115,7 +153,44 @@ class ProductDetailView(APIView):
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT) 
     
-    
+
+ #class based views
+ #    
+# class Books(APIView):
+#        def get(self, request):
+#         books = Book.objects.all()
+#         serializer = BookSerializer(books, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK) 
+       
+#        def post(self, request):
+#            serializer = BookSerializer(data.request.data)
+#            if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+       
+# class BookDetailView(APIView):
+#     def get_object(self, pk):
+#         try:
+#             book = Book.objects.get(pk=pk)
+#             return book
+#         except Book.DoesNotExist:
+#             raise Http404
+#     def get(self, request, pk):
+#             book = self.get_object(pk)
+#             serializer = BookSerializer(book)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#     def put(self, request, pk):
+#         book = self.get_object(pk)
+#         serializer = BookSerializer(book, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+#     def delete(self, request, pk):
+#         book = self.get_object(pk)
+#         book.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)  
 
     # # class based views
 # class Employees(APIView):
@@ -159,6 +234,29 @@ class ProductDetailView(APIView):
 #         employee.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT) 
 
+  
+# class Books(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+#     queryset = Book.objects.all()
+#     serializer_class = BookSerializer
+#     def get(self, request):
+#         return self.list(request)
+#     def post(self, request):
+#         return self.create(request)
+    
+# class BookDetailView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+#     queryset = Book.objects.all()
+#     serializer_class = BookSerializer
+#     def get(self, request, pk):
+#         return self.retrieve(request, pk)
+#     def put(self,request, pk):
+#         return self.update(request , pk)
+#     def delete(self, request, pk):
+#         return self.destroy(request, pk)    
+
+
+
+
+
    #mixins aviews
 # class Employees(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
 #     queryset = Employee.objects.all()
@@ -185,6 +283,15 @@ class ProductDetailView(APIView):
 #     queryset = Employee.objects.all() #ORM
 #     serializer_class = EmployeeSerializer  #this is the serializer we created in serializers.py
 
+class Books(generics.ListCreateAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer  #this is the serializer we created in serializers.py
+
+
+class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    lookup_field = 'pk'  # this is the primary key field we are using to retrieve the book
 
     
 
@@ -192,6 +299,9 @@ class ProductDetailView(APIView):
 #     queryset = Employee.objects.all()
 #     serializer_class = EmployeeSerializer
 #     lookup_field = 'pk'  # this is the primary key field we are using to retrieve the employee
+
+
+
 
 
 class EmployeeViewSet(viewsets.ViewSet):
@@ -228,12 +338,16 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
     pagination_class = CustomPagination  #if we want to use custom pagination
       # this is the primary key field we are using to retrieve the employee
+    # filterset_fields =['designation'] # this is global filter it works with exact field name
+    filterset_class = EmployeeFilter  #if we want to use filters
 
 
     
 class BlogListView(generics.ListCreateAPIView):
         queryset = Blog.objects.all()
         serializer_class = BlogSerializer
+        filter_backends = [SearchFilter]  #if we want to use search filter
+        search_fields =['blog_title']  #if we want to use search filter
 
 class CommentListView(generics.ListCreateAPIView):
         queryset = Comment.objects.all()
@@ -250,6 +364,13 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     lookup_field = 'pk'
+
+
+     #if we want to use custom pagination
+      # this is the primary key field we are using to retrieve the employee
+
+      #if we want to use custom pagination
+      # this is the primary key field we are using to retrieve the employee
 
     
 

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from students.models import Student 
 from employees.models import Employee
 from products.models import Product
+from books.models import Book
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,7 +19,13 @@ class EmployeeSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = '__all__'  # if we see say __all__ it means all the fields in product should be serialziers     
+        fields = '__all__'  # if we see say __all__ it means all the fields in product should be serialziers   
+
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = '__all__'  # if we see say __all__ it means all the fields in book should be serialziers
 
         
            

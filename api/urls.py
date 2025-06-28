@@ -32,6 +32,12 @@ urlpatterns = [
 
    path('comments/<int:pk>', views.CommentDetailView.as_view()),
 
+   path('books/', views.Books.as_view()),  # to fetch all books
+   path('books/<int:pk>/', views.BookDetailView.as_view()),  #
+
+#    path('books/', views.booksView),
+#    path('books/<int:pk>/', views.bookDetailView),  # to fetch a single book by id
+
 
 
 ]

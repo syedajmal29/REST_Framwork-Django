@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'employees',
     'products',
     'blogs',
+    'books',
+    'django_filters',
     
 ]
 
@@ -134,11 +136,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 2,
+    'DEFAULT_FILTER_BACKENDS' : ['django_filters.rest_framework.DjangoFilterBackend'],
 } 
 
 
 # we can use PageNumberPagination, LimitOffsetPagination, CursorPagination
 # this is global pagination setting which only works in generic views and viewsets
 # for function based views we need to use custom pagination class
+
+
 
 
