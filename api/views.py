@@ -17,6 +17,7 @@ from blogs.serializers import BlogSerializer, CommentSerializer
 from .paginations import CustomPagination  #if we want to use custom pagination
 from employees.filters import EmployeeFilter  #if we want to use filters
 from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter  #if we want to use ordering filter
 
 
 
@@ -346,8 +347,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 class BlogListView(generics.ListCreateAPIView):
         queryset = Blog.objects.all()
         serializer_class = BlogSerializer
-        filter_backends = [SearchFilter]  #if we want to use search filter
+        filter_backends = [SearchFilter, OrderingFilter]  #if we want to use search filter
         search_fields =['blog_title']  #if we want to use search filter
+        ordering_fields =['id', 'blog_title']  #if we want to use ordering filter
 
 class CommentListView(generics.ListCreateAPIView):
         queryset = Comment.objects.all()
