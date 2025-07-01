@@ -25,5 +25,6 @@ urlpatterns = [
 
     #API Endpoints
     #Most Api will start from api/
-    path('api/v1/', include('api.urls'))   #this will go to api folder urls.py file and then to the respective app urls.py file
+    path('api/v1/', include('api.urls')),   #this will go to api folder urls.py file and then to the respective app urls.py file
+    path('', include('books_review.urls')),  # Include the books_review app URLs
 ]
